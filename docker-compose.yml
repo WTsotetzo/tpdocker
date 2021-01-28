@@ -1,0 +1,31 @@
+version: "3.8" #declaration des la version de docker-compose
+services: #On déclare à partir d'ici les services que l'on va utiliser
+  mysql: 
+    image: mysql:8.0.23 #L'image de mysql avec le tag 
+    restart: on-failure #On redémmare l'image s'il se ferme dû à une erreur
+    environment:  
+     MYSQL_ROOT_PASSWORD: root
+     MYSQL_DATABASE: example
+  nginx:
+   image: nginx:1.19.0-alpine
+   restart: on-failure
+   volumes: #Contient le vers l'application dans l'image
+     - './app/monapp/public/:/usr/src/app'
+     - './docker/nginx/default.conf:/etc/nginx/conf.d/default.conf:ro'
+
+   ports: 
+     - 80:80
+   depends_on: 
+     - php
+  php:
+   build:
+     
+     context: .
+     dockerfile: ./Dockerfile #Un appel sera fait au Dockerfile lors du build de Docker-compose pour le build
+   volumes:
+     - './app/monapp/:/usr/src/app'
+   restart: on-failure
+   env_file: #contient l'appel fait à l'environnementdu service php. Le fichier sers à merttre en "variable glabale" les variables qui mettent en place l'environement
+     - .env
+   user: 1000:1000 # le port sur lequel on pourra voir la page internet grace à localhost.
+      
